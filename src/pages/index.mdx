@@ -1,8 +1,8 @@
 ---
 layout: ../layouts/Layout.astro
-title: Academic Project Page Template
+title: "No Regrets: Investigating and Improving Regret Approximations for Curriculum Discovery"
 description: Simple project page template for your research paper, built with Astro and Tailwind CSS
-favicon: favicon.svg
+favicon: Robo_Fav_Diagram.svg
 thumbnail: screenshot.png
 ---
 
@@ -30,125 +30,141 @@ export const components = {pre: CodeBlock, table: Table}
   title={frontmatter.title}
   authors={[
     {
-      name: "Roman Hauksson",
-      url: "https://roman.technology",
-      institution: "Independent",
-      notes: ["*", "†"],
+      name: "Alexander Rutherford",
+      url: "https://amacrutherford.com",
+      institution: "University of Oxford",
+      notes: ["*"],
     },
     {
-      name: "Author Two",
-      institution: "Institution Two",
-      notes: ["*", "†"],
+      name: "Michael Beukman",
+      url: "https://michaelbeukman.com/",
+      institution: "University of Oxford",
+      notes: ["*"],
     },
     {
-      name: "Author Three",
-      institution: "Institution Three",
-      notes: ["†"],
+      name: "Timon Willi",
+      url: "https://www.timonwilli.com/",
+      institution: "University of Oxford",
     },
     {
-      name: "Author Four",
-      institution: "Institution Four",
+      name: "Bruno Lacerda",
+      url: "https://bfalacerda.github.io/",
+      institution: "University of Oxford",
     },
+    {
+      name: "Nick Hawes",
+      url: "https://www.robots.ox.ac.uk/~nickh/",
+      institution: "University of Oxford",
+    },
+    {
+      name: "Jakob Foerster",
+      url: "https://www.jakobfoerster.com/",
+      institution: "University of Oxford",
+    }
   ]}
-  conference="Conference Name"
+  conference="The Thirty-Eighth Annual Conference on Neural Information Processing Systems"
   notes={[
     {
       symbol: "*",
-      text: "author note one",
-    },
-    {
-      symbol: "†",
-      text: "author note two",
+      text: "Equal contribution",
     },
   ]}
   links={[
     {
       name: "Paper",
-      url: "",
+      url: "https://arxiv.org/pdf/2408.15099",
       icon: "fa-solid:file-pdf",
     },
     {
-      name: "Code",
-      url: "https://github.com/RomanHauksson/academic-project-astro-template",
+      name: "SFL Algorithm",
+      url: "https://github.com/amacrutherford/sampling-for-learnability",
+      icon: "mdi:github",
+    },
+    {
+      name: "JaxNav",
+      url: "https://github.com/FLAIROx/JaxMARL/tree/main/jaxmarl/environments/jaxnav",
       icon: "mdi:github",
     },
     {
       name: "arXiv",
-      url: "",
+      url: "https://arxiv.org/abs/2408.15099",
       icon: "academicons:arxiv",
     },
   ]}
   />
 
-<Video source={outside} />
+
 
 <HighlightedSection>
 
 ## Abstract
 
-This is a live demo for a template you can use to create a simple project page for your research paper. See the code for the template and instructions on how to use it yourself [here](https://github.com/RomanHauksson/academic-project-astro-template). It's made with the [Astro web framework](https://astro.build/) and styled with [Tailwind CSS](https://tailwindcss.com/). You write the content in [MDX](https://mdxjs.com/), which enables markdown formatting like **bold**, _italics_, and ~strikethrough~, as well as custom components like <SmallCaps>small caps.</SmallCaps>
+What data or environments to use for training to improve downstream performance is a longstanding and very topical question in reinforcement learning. In particular, Unsupervised Environment Design (UED) methods have gained recent attention as their adaptive curricula promise to enable agents to be robust to in- and out-of-distribution tasks. **We investigate how existing UED methods select training environments**, focusing on task prioritisation metrics. Surprisingly, **despite methods aiming to maximise regret in theory, the practical approximations do not correlate with regret but with success rate**. As a result, a significant portion of an agent's experience comes from environments it has already mastered, offering little to no contribution toward enhancing its abilities.
+
+Put differently, **current methods fail to predict intuitive measures of ``learnability.''** Specifically, they are unable to consistently identify those scenarios that the agent can sometimes solve, but not always. Based on our analysis, we develop a method that directly trains on scenarios with high learnability. This simple and intuitive approach outperforms existing UED methods in several binary-outcome environments, including the standard domain of Minigrid and a novel setting closely inspired by a real-world robotics problem. We further introduce a new adversarial evaluation procedure for directly measuring robustness, closely mirroring the conditional value at risk (CVaR). We open-source all our code and present visualisations of final policies here: this https URL.
 
 </HighlightedSection>
 
-## Figures
+## Regret Approximation Correlations 
 
-Use the figure component to display images, videos, equations, or any other element, with an optional caption.
-
-<Figure
-    caption="Diagram of the transformer deep learning architecture."
-  >
-    <Image source={transformer} altText="Diagram of the transformer deep learning architecture." />
-</Figure>
-
-## Two columns
-
-Use the two columns component to display two columns of content. In this example, the first column contains a figure with a YouTube video and the second column contains a figure with a custom [React](https://react.dev/) component. By default, they display side by side, but if the screen is narrow enough (for example, on mobile), they're arranged vertically.
+As seen below, two common score functions generally correlate with success rate, and are the highest when the agent perfectly solves a level! We argue that, instead, levels with high "learnability" should be prioritised, i.e. those that are solved sometimes, but not always.
 
 <TwoColumns>
-  <Figure slot="left" caption="Take a look at this YouTube video.">
-    <YouTubeVideo videoId="wjZofJX0v4M" />
+  <Figure slot="left" caption="Max MC">
+    <img src="../public/max_mc_hist.jpg">
+    </img>
   </Figure>
-  <Figure slot="right" caption="Now look at this Gaussian Splat, rendered with a React component.">
-    <Splat client:idle />
+  <Figure slot="right" caption="PVL">
+    <img src="../public/pvl_hist.jpg">
+    </img>
   </Figure>
 </TwoColumns>
 
-## Heading levels
 
-Use headings to divide your content into sections.
+## Sampling for Learnability (SFL)
 
-### Heading 3
+Inspired by this, we use a score function defined as _p(1-p)_. Where for a given success rate _p_ in a deterministic, binary-outcome domain, which is maximised when the agent solves the level exactly half the time. We use this to develop a new algorithm, Sampling for Learnability (SFL), which samples a large number of levels and uses rollouts to evaluate their learnability. We then train the agent on a mix of the highly learnable levels alongside random ones.
 
-Go down a level to heading 3...
+### Evaluation protocol
 
-#### Heading 4
+Furthermore, to actually test the robustness of curriculum-learned agents, we propose an adversarial evaluation procedure that better measures robustness. Mirroring Conditional Value at Risk (CVaR), it offers a more rigorous way to assess agents under challenging conditions.
 
-...and down again to heading 4.
+### Results
 
-## LaTeX
+Our results demonstrate that SFL outperforms multiple SoTA UED methods on several domains, including MiniGrid Maze, XLand-MiniGrid and a more real-world environment in 2D robotic navigation tasks.
 
-You can also add LaTeX formulas, rendered during the build process using [KaTeX](https://katex.org/) so they're quick to load for visitors of your project page. You can write them inline, like this: <LaTeX inline formula="a^2 + b^2 = c^2" />. Or, you can write them as a block:
+<Figure>
+    <img src="../public/minigrid_performance.jpeg">
+    </img>
+</Figure>
 
-<LaTeX formula="\int_a^b f(x) dx" />
+## JaxNav Environment
 
-## Tables
+<TwoColumns>
+  <Figure slot="left">
+    <img src="../public/Jaxnav_MA_4.gif">
+    </img>
+  </Figure>
+  <Figure slot="right">
+    We also introduce JaxNav, a 2D geometric navigation environment for differential drive robots. Using distances readings to nearby obstacles (mimicing LiDAR readings), the direction to their goal and their current velocity, robots must navigate to their goal without colliding with obstacles. In the example shown here, there is no communication between agents, they deconflict and navigate soley based on the aforementioned features. 
+  </Figure>
+</TwoColumns>
 
-You can add simple tables using [GitHub Flavored Markdown syntax](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-tables):
+## See also
 
-| Model | Accuracy | F1 score | Training time (hours) |
-| :--- | :---: | :---: | :---: |
-| BERT-base | 0.89 | 0.87 | 4.5 |
-| RoBERTa-large | 0.92 | 0.91 | 7.2 |
-| DistilBERT | 0.86 | 0.84 | 2.1 |
-| XLNet | 0.90 | 0.89 | 6.8 |
+[Kinetix](https://kinetix-env.github.io/), use SFL to train their general agent, with performance far exceeding other UED approaches, including Domain Randomisation!
+
 
 ## BibTeX citation
 
 ```bibtex
-@misc{roman2024academic,
-  author = "{Roman Hauksson}",
-  title = "Academic Project Page Template",
-  year = "2024",
-  howpublished = "\url{https://research-template.roman.technology}",
+@misc{rutherford2024noregrets,
+      title={No Regrets: Investigating and Improving Regret Approximations for Curriculum Discovery}, 
+      author={Alexander Rutherford and Michael Beukman and Timon Willi and Bruno Lacerda and Nick Hawes and Jakob Foerster},
+      year={2024},
+      eprint={2408.15099},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2408.15099}, 
 }
 ```
